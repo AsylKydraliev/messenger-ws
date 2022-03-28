@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 import { Message, MessageClass, ServerMessage } from '../models/message.model';
 import { NgForm } from '@angular/forms';
+import { fetchMessagesRequest } from '../store/users/messages.actions';
 
 @Component({
   selector: 'app-chat',
@@ -14,6 +15,7 @@ import { NgForm } from '@angular/forms';
 export class ChatComponent implements OnInit, OnDestroy {
   @ViewChild('f') form!: NgForm;
   user: Observable<null | User>;
+  stateMessages: Observable<Message[]>;
   ws!: WebSocket;
   userName = '';
   token = '';
@@ -23,12 +25,19 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   constructor(private store: Store<AppState>) {
     this.user = store.select(state => state.users.user);
+    this.stateMessages = store.select(state => state.messages.messages);
+
+    this.stateMessages.subscribe(message => {
+      this.messages = message;
+    })
+
     this.user.subscribe(user => {
       this.userData = user;
     })
   }
 
   ngOnInit(): void {
+    this.store.dispatch(fetchMessagesRequest());
     this.ws = new WebSocket('ws://localhost:8000/chat');
 
     this.ws.onclose = () => {
@@ -40,22 +49,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.ws.onmessage = event => {
       this.decodedMessage = JSON.parse(event.data);
 
-      if(this.decodedMessage.type === 'NEW_MESSAGE'){
+      if(this.decodedMessage.type === "NEW_MESSAGE"){
         this.messages = <any>this.decodedMessage.message;
       }
     }
 
     this.ws.onopen = () => {
       this.setUser();
-      this.getMessages();
     }
-  }
-
-  getMessages(){
-    this.ws.send(JSON.stringify({
-      type: 'GET_MESSAGES',
-      messages: [],
-    }))
   }
 
   setUser(){

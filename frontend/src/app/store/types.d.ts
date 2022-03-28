@@ -1,4 +1,5 @@
 import { LoginError, RegisterError, User } from '../models/user.model';
+import { Message } from '../models/message.model';
 
 export type UserState = {
   user: null | User,
@@ -9,8 +10,14 @@ export type UserState = {
   fetchLoading: boolean,
 };
 
+export type MessageState = {
+  messages: Message[],
+  fetchLoading: boolean,
+};
+
 export type AppState = {
   users: UserState,
+  messages: MessageState,
 };
 
 

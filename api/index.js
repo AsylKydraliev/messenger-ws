@@ -4,7 +4,6 @@ const {nanoid} = require('nanoid');
 const mongoose = require("mongoose");
 const config = require("./config");
 const users = require('./routes/users');
-const User = require("./models/User");
 const Message = require("./models/Message");
 
 const app = express();
@@ -18,11 +17,13 @@ app.use(express.json());
 app.use('/users', users);
 
 const activeConnections = {};
-let username = '';
-let token = '';
-let messages = [];
 
-app.ws('/chat', (ws, req, next) => {
+app.get('/chat', async (req, res) => {
+    const messages = await Message.find().limit(30);
+    return res.send(messages)
+})
+
+app.ws('/chat', async (ws, req, next) => {
     const id = nanoid();
     console.log('client connected id = ', id);
     activeConnections[id] = ws;
@@ -41,7 +42,6 @@ app.ws('/chat', (ws, req, next) => {
 
             switch (decodedMsg.type) {
                 case 'LOGIN':
-                    console.log('login')
                     if(!decodedMsg.token){
                         ws.on('close', () => {
                             console.log('client disconnected! id = ', id);
@@ -60,16 +60,16 @@ app.ws('/chat', (ws, req, next) => {
                         }))
                     })
                     break;
-                case 'GET_MESSAGES':
-                    const messages = await Message.find().limit(30);
-                    Object.keys(activeConnections).forEach(id => {
-                        const conn = activeConnections[id];
-                        conn.send(JSON.stringify({
-                            type: 'ALL_MESSAGES',
-                            message: messages,
-                        }))
-                    })
-                    break;
+                // case 'GET_MESSAGES':
+                //     const messages = await Message.find().limit(30);
+                //     Object.keys(activeConnections).forEach(id => {
+                //         const conn = activeConnections[id];
+                //         conn.send(JSON.stringify({
+                //             type: 'ALL_MESSAGES',
+                //             message: messages,
+                //         }))
+                //     })
+                //     break;
                 default:
                     console.log('Unknown type: ', decodedMsg.type);
             }
