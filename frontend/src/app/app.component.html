@@ -1,0 +1,21 @@
+<mat-toolbar fxLayoutAlign="space-between center">
+  <h1 routerLink="/">Chat</h1>
+  <nav *ngIf="!(user | async) else userMenu">
+    <a mat-button routerLink="/register">REGISTER</a>
+    <a mat-button routerLink="/login">SIGN IN</a>
+  </nav>
+</mat-toolbar>
+
+<ng-template #userMenu>
+  <nav>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon class="register">account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item disabled>{{ (user | async)?.email }}</button>
+      <button mat-menu-item (click)="logout()">Logout</button>
+    </mat-menu>
+  </nav>
+</ng-template>
+
+<router-outlet></router-outlet>

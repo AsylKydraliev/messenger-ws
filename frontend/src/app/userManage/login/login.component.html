@@ -1,0 +1,60 @@
+<div fxLayout="row" fxLayoutAlign="center">
+  <div class="register-form">
+    <mat-card-title>Sign in</mat-card-title>
+    <mat-card-content>
+      <form
+        #f="ngForm"
+        fxLayout="column"
+        autocomplete="off"
+        (ngSubmit)="onSubmit()"
+      >
+        <div *ngIf="error | async" class="error">
+          {{ (error | async)?.error }}
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input name="email" required autocomplete="username" matInput email ngModel #email="ngModel"/>
+          <mat-error
+            *ngIf="email.touched && email.hasError('required')"
+          >Email is required!
+          </mat-error>
+          <mat-error
+            *ngIf="email.touched && email.hasError('email')"
+          >Wrong email address!
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input
+            type="password" name="password" autocomplete="current-password"
+            required matInput ngModel #password="ngModel"
+          />
+          <mat-error
+            *ngIf="password.touched && password.hasError('required')"
+          >Password is required!
+          </mat-error>
+        </mat-form-field>
+
+        <div class="regLink">
+          <a routerLink="/registration">Don't have  an account? Sign up</a>
+        </div>
+
+        <ng-template #btn>
+          <button
+            type="submit"
+            mat-raised-button
+            [disabled]="f.invalid"
+          >SIGN IN</button>
+        </ng-template>
+        <mat-progress-bar mode="indeterminate" *ngIf="(loading | async) else btn"></mat-progress-bar>
+      </form>
+    </mat-card-content>
+  </div>
+</div>
+
+
+
+
+
+
