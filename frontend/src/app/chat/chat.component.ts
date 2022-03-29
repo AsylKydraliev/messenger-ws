@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from '../store/types';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { User } from '../models/user.model';
-import { Message, MessageClass, ServerMessage } from '../models/message.model';
+import { Message } from '../models/message.model';
 import { NgForm } from '@angular/forms';
 import { fetchMessagesRequest } from '../store/users/messages.actions';
 
@@ -19,19 +19,20 @@ export class ChatComponent implements OnInit, OnDestroy {
   ws!: WebSocket;
   userName = '';
   token = '';
-  messages: MessageClass[] = [];
+  messages!: Message[];
   userData: User | null = null;
-  decodedMessage!: ServerMessage;
+  messageSub!: Subscription;
+  userSub!: Subscription;
 
   constructor(private store: Store<AppState>) {
     this.user = store.select(state => state.users.user);
     this.stateMessages = store.select(state => state.messages.messages);
 
-    this.stateMessages.subscribe(message => {
-      this.messages = message;
+    this.messageSub = this.stateMessages.subscribe(message => {
+      this.messages = message.slice().reverse();
     })
 
-    this.user.subscribe(user => {
+    this.userSub = this.user.subscribe(user => {
       this.userData = user;
     })
   }
@@ -47,10 +48,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     this.ws.onmessage = event => {
-      this.decodedMessage = JSON.parse(event.data);
+      const decodedMessage = JSON.parse(event.data);
 
-      if(this.decodedMessage.type === "NEW_MESSAGE"){
-        this.messages = <any>this.decodedMessage.message;
+      if(decodedMessage.type === "NEW_MESSAGE"){
+        this.messages = decodedMessage.message;
+        this.messages.reverse();
       }
     }
 
@@ -83,6 +85,8 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(){
+    this.userSub.unsubscribe();
+    this.messageSub.unsubscribe();
     this.ws.close();
   }
 }

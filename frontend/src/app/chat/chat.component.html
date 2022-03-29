@@ -6,10 +6,9 @@
     </div>
   </div>
 
-  <div id="item-1" style="overflow-y:scroll;">
-    <div *ngFor="let message of messages">
-      <p>{{ message.username }}: </p>
-      <span>{{ message.message }}</span>
+  <div id="item-1" style="overflow:auto">
+    <div *ngFor="let message of messages" class="msg">
+      <p>{{ message.username }}: <span>{{ message.message }}</span></p>
     </div>
   </div>
 

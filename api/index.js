@@ -19,9 +19,9 @@ app.use('/users', users);
 const activeConnections = {};
 
 app.get('/chat', async (req, res) => {
-    const messages = await Message.find().limit(30);
+    const messages = await Message.find().sort({_id: -1}).limit(30);
     return res.send(messages)
-})
+});
 
 app.ws('/chat', async (ws, req, next) => {
     const id = nanoid();
@@ -51,7 +51,7 @@ app.ws('/chat', async (ws, req, next) => {
 
                     break;
                 case 'SEND_MESSAGE':
-                    const result = await Message.find().limit(30);
+                    const result = await Message.find().sort({_id: -1}).limit(30);
                     Object.keys(activeConnections).forEach(id => {
                         const conn = activeConnections[id];
                         conn.send(JSON.stringify({
@@ -60,16 +60,6 @@ app.ws('/chat', async (ws, req, next) => {
                         }))
                     })
                     break;
-                // case 'GET_MESSAGES':
-                //     const messages = await Message.find().limit(30);
-                //     Object.keys(activeConnections).forEach(id => {
-                //         const conn = activeConnections[id];
-                //         conn.send(JSON.stringify({
-                //             type: 'ALL_MESSAGES',
-                //             message: messages,
-                //         }))
-                //     })
-                //     break;
                 default:
                     console.log('Unknown type: ', decodedMsg.type);
             }

@@ -14,13 +14,12 @@ export class MessagesService {
   getMessages(){
     return this.http.get<Message[]>(environment.apiUrl + '/chat').pipe(
       map(response => {
-        console.log(response)
         return response.map(messages =>{
            return new MessageClass(
              messages._id,
              messages.userId,
-             messages.message,
              messages.username,
+             messages.message,
            )
           }
         )
