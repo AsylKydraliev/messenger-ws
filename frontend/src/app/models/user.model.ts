@@ -5,15 +5,6 @@ export interface User {
   token: string,
 }
 
-export class UsersModel {
-  constructor(
-    public _id: string,
-    public email: string,
-    public displayName: string,
-    public token: string,
-  ) {}
-}
-
 export interface RegisterUser {
   email: string,
   displayName: string,

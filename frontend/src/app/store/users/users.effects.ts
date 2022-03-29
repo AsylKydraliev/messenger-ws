@@ -35,7 +35,7 @@ export class UsersEffects {
       map(user => loginUsersSuccess({user})),
       tap(() => {
         this.helpers.openSnackbar('Login successful');
-        void this.router.navigate(['/']);
+        void this.router.navigate(['/chat']);
       }),
       this.helpers.catchServerError(loginUsersFailure)
     ))
