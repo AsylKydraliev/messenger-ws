@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const config = require("./config");
 const users = require('./routes/users');
 const Message = require("./models/Message");
+const User = require("./models/User");
 
 const app = express();
 
@@ -32,6 +33,17 @@ app.ws('/chat', async (ws, req, next) => {
         try {
             const decodedMsg = JSON.parse(msg);
 
+            if(decodedMsg.type === 'LOGIN'){
+                const user = await User.findOne({token: decodedMsg.token});
+
+                if(decodedMsg.token !== user.token){
+                    ws.on('close', () => {
+                        console.log('client disconnected! id = ', id);
+                        delete activeConnections[id];
+                    })
+                }
+            }
+
             const message = new Message({
                 message: decodedMsg.message.message,
                 userId: decodedMsg.message.username._id,
@@ -41,15 +53,6 @@ app.ws('/chat', async (ws, req, next) => {
             await message.save();
 
             switch (decodedMsg.type) {
-                case 'LOGIN':
-                    if(!decodedMsg.token){
-                        ws.on('close', () => {
-                            console.log('client disconnected! id = ', id);
-                            delete activeConnections[id];
-                        })
-                    }
-
-                    break;
                 case 'SEND_MESSAGE':
                     const result = await Message.find().sort({_id: -1}).limit(30);
                     Object.keys(activeConnections).forEach(id => {
